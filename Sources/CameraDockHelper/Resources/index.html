@@ -17,13 +17,12 @@
       --accent-2: #a78bfa;
       --ok: #38d996;
       --danger: #ff6b77;
+      --track: #3a404a;
     }
 
     * { box-sizing: border-box; }
 
-    html, body {
-      height: 100%;
-    }
+    html, body { height: 100%; }
 
     body {
       margin: 0;
@@ -35,6 +34,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 11px;
       line-height: 1.25;
+      user-select: none;
     }
 
     header {
@@ -43,9 +43,8 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 6px 8px;
+      padding: 5px 8px;
       border-bottom: 1px solid var(--line);
-      background: var(--bg);
     }
 
     .brand {
@@ -73,7 +72,6 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      flex: 0 0 auto;
       color: var(--muted);
       font-size: 10px;
       white-space: nowrap;
@@ -92,137 +90,246 @@
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 13%, transparent);
     }
 
+    .header-actions {
+      display: flex;
+      gap: 4px;
+      margin-left: 6px;
+    }
+
+    .header-actions button {
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .header-actions button:hover { border-color: #555d69; background: #2e333b; }
+
     main {
       flex: 1 1 auto;
       min-height: 0;
       display: flex;
       flex-direction: column;
-      padding: 6px;
-      gap: 6px;
+      padding: 6px 8px 6px;
+      gap: 5px;
     }
 
     #controls {
       flex: 1 1 auto;
       min-height: 0;
-      overflow: auto;
       display: grid;
-      gap: 4px;
-      align-content: start;
-    }
-
-    .control {
-      display: grid;
-      grid-template-columns: 92px minmax(0, 1fr) auto;
-      align-items: center;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 6px;
-      min-height: 26px;
-      padding: 3px 6px;
-      border: 1px solid var(--line);
-      border-radius: 5px;
-      background: var(--panel);
-      transition: opacity .15s ease, border-color .15s ease;
     }
 
-    .control.toggle {
-      grid-template-columns: 1fr auto;
-    }
-
-    .control:focus-within {
-      border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
-    }
-
-    .control.disabled {
-      opacity: .42;
-    }
-
-    .control-label {
-      font-weight: 560;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .control-value {
-      display: none;
-    }
-
-    .slider-row {
-      display: contents;
-    }
-
-    input[type="range"] {
+    .dial-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       min-width: 0;
-      width: 100%;
-      height: 3px;
-      accent-color: var(--accent);
-    }
-
-    input[type="number"] {
-      width: 52px;
-      padding: 2px 4px;
+      padding: 6px 4px 7px;
       border: 1px solid var(--line);
-      border-radius: 4px;
-      background: var(--panel-2);
-      color: var(--accent-2);
-      font: inherit;
-      font-variant-numeric: tabular-nums;
-      text-align: right;
+      border-radius: 8px;
+      background: var(--panel);
     }
 
-    .switch {
-      position: relative;
-      width: 30px;
-      height: 16px;
-      flex: 0 0 auto;
-    }
-
-    .switch input {
-      position: absolute;
-      opacity: 0;
+    .dial-card.disabled .dial {
+      opacity: .38;
       pointer-events: none;
     }
 
-    .switch span {
+    .dial-card.unavailable { opacity: .45; }
+
+    .dial-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+
+    .dial {
+      position: relative;
+      width: min(100%, 108px);
+      aspect-ratio: 1;
+      margin: 4px 0 2px;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .dial:active { cursor: grabbing; }
+
+    .dial svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+
+    .dial-value {
       position: absolute;
-      inset: 0;
+      inset: 28% 10% 34%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent-2);
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .mode-switch {
+      display: flex;
+      margin-top: 4px;
+      padding: 1px;
+      border: 1px solid var(--line);
       border-radius: 99px;
-      background: #464c56;
-      transition: .16s;
+      background: var(--panel-2);
+    }
+
+    .mode-switch button {
+      min-width: 34px;
+      padding: 2px 7px;
+      border: 0;
+      border-radius: 99px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .04em;
       cursor: pointer;
     }
 
-    .switch span::after {
-      content: "";
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      top: 2px;
-      left: 2px;
-      border-radius: 50%;
-      background: white;
-      box-shadow: 0 1px 2px #0007;
-      transition: .16s;
+    .mode-switch button.active {
+      background: var(--accent);
+      color: white;
     }
 
-    .switch input:checked + span { background: var(--accent); }
-    .switch input:checked + span::after { transform: translateX(14px); }
+    .mode-placeholder {
+      height: 20px;
+      margin-top: 4px;
+    }
 
     .empty {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 16px 12px;
       border: 1px dashed var(--line);
-      border-radius: 5px;
+      border-radius: 8px;
       text-align: center;
       color: var(--muted);
       line-height: 1.4;
     }
 
-    .actions {
+    .tabs {
       flex: 0 0 auto;
       display: flex;
       gap: 4px;
     }
 
-    button {
+    .tabs button {
+      flex: 1;
+      padding: 6px 6px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .tabs button:hover { border-color: #555d69; background: #2e333b; }
+    .tabs button.active {
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
+      background: color-mix(in srgb, var(--accent) 24%, var(--panel-2));
+    }
+
+    .preset-bar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .preset-bar select {
+      min-width: 0;
+      flex: 1;
+      height: 24px;
+      padding: 0 6px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .preset-bar button {
+      flex: 0 0 auto;
+      padding: 4px 6px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .preset-bar button:hover { border-color: #555d69; background: #2e333b; }
+
+    .dialog {
+      position: fixed;
+      inset: 0;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: #0006;
+    }
+
+    .dialog-card {
+      width: min(280px, 100%);
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 10px 30px #0008;
+    }
+
+    .dialog-title {
+      margin-bottom: 8px;
+      font-weight: 650;
+    }
+
+    .dialog-card input {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 6px 7px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .dialog-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .dialog-actions button {
       flex: 1;
       padding: 5px 6px;
       border: 1px solid var(--line);
@@ -233,8 +340,16 @@
       cursor: pointer;
     }
 
-    button:hover { border-color: #555d69; background: #2e333b; }
-    button:active { transform: translateY(1px); }
+    .dialog-actions .confirm {
+      border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
+      background: color-mix(in srgb, var(--accent) 24%, var(--panel-2));
+    }
+
+    .toast.ok {
+      border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
+      background: #1b3329;
+      color: #d4ffe8;
+    }
 
     .toast {
       position: fixed;
@@ -248,7 +363,6 @@
       background: #351f25;
       color: #ffd9dd;
       box-shadow: 0 6px 18px #0008;
-      font-size: 11px;
     }
 
     .hidden { display: none !important; }
@@ -263,33 +377,118 @@
     <div class="status-row">
       <span id="statusDot" class="dot"></span>
       <span id="statusText">Připojování…</span>
+      <div class="header-actions">
+        <button id="rescan" type="button" title="Vyhledat kameru">↻</button>
+        <button id="reset" type="button" title="Výchozí hodnoty">↺</button>
+      </div>
     </div>
   </header>
 
   <main>
     <section id="controls"></section>
-    <div class="actions">
-      <button id="rescan" type="button">Vyhledat kameru</button>
-      <button id="reset" type="button">Výchozí hodnoty</button>
+    <div class="preset-bar">
+      <select id="presetSelect" aria-label="Preset panelu">
+        <option value="">Preset…</option>
+      </select>
+      <button id="presetLoad" type="button">Načíst</button>
+      <button id="presetCreate" type="button">Nový</button>
+      <button id="presetSave" type="button">Uložit</button>
+      <button id="presetDelete" type="button">Smazat</button>
     </div>
+    <nav class="tabs" id="tabs">
+      <button type="button" data-panel="expo" class="active">Expo</button>
+      <button type="button" data-panel="obraz">Obraz</button>
+      <button type="button" data-panel="optika">Optika</button>
+    </nav>
   </main>
+
+  <div id="dialog" class="dialog hidden">
+    <div class="dialog-card">
+      <div id="dialogTitle" class="dialog-title">Nový preset</div>
+      <input id="dialogInput" maxlength="40" placeholder="Název presetu">
+      <div class="dialog-actions">
+        <button id="dialogCancel" type="button">Zrušit</button>
+        <button id="dialogOk" type="button" class="confirm">OK</button>
+      </div>
+    </div>
+  </div>
 
   <div id="toast" class="toast hidden" role="alert"></div>
 
   <script>
+    const START_DEG = 135;
+    const SWEEP_DEG = 270;
+    const CX = 50;
+    const CY = 50;
+    const RADIUS = 38;
+    const SHUTTER_DENOMS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 80, 100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000];
+    const ISO_STOPS = [100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600];
+    const WB_WARM = 2800;
+    const WB_COOL = 6500;
+
+    const PANELS = [
+      {
+        id: 'expo',
+        label: 'Expo',
+        dials: [
+          { id: 'exposureTime', label: 'EXP', autoId: 'exposureAuto', format: 'shutter' },
+          { id: 'gain', label: 'ISO', format: 'iso' },
+          { id: 'brightness', label: 'JAS', format: 'percent' },
+          { id: 'focus', label: 'FOCUS', autoId: 'focusAuto', format: 'focus' }
+        ]
+      },
+      {
+        id: 'obraz',
+        label: 'Obraz',
+        dials: [
+          { id: 'contrast', label: 'KONTR', format: 'percent' },
+          { id: 'saturation', label: 'SAT', format: 'percent' },
+          { id: 'sharpness', label: 'OSTR', format: 'percent' },
+          { id: 'whiteBalance', label: 'WB', autoId: 'whiteBalanceAuto', format: 'kelvin' }
+        ]
+      },
+      {
+        id: 'optika',
+        label: 'Optika',
+        dials: [
+          { id: 'zoom', label: 'ZOOM', format: 'percent' },
+          { id: 'tilt', label: 'TILT', format: 'degree' },
+          { id: 'pan', label: 'PAN', format: 'degree' },
+          { id: 'backlight', label: 'BLC', format: 'percent' }
+        ]
+      }
+    ];
+
     const controlsElement = document.querySelector('#controls');
     const cameraNameElement = document.querySelector('#cameraName');
     const statusTextElement = document.querySelector('#statusText');
     const statusDotElement = document.querySelector('#statusDot');
     const toastElement = document.querySelector('#toast');
+    const presetSelect = document.querySelector('#presetSelect');
+    const dialogElement = document.querySelector('#dialog');
+    const dialogTitle = document.querySelector('#dialogTitle');
+    const dialogInput = document.querySelector('#dialogInput');
     const localValues = new Map();
     const timers = new Map();
     let controls = [];
+    let presets = { expo: { items: [], selectedId: null }, obraz: { items: [], selectedId: null }, optika: { items: [], selectedId: null } };
+    let activeDrag = null;
+    let activePanel = 'expo';
+    let connected = false;
+    let dialogMode = 'create';
 
     function escapeText(value) {
       const node = document.createElement('span');
       node.textContent = String(value ?? '');
       return node.innerHTML;
+    }
+
+    function specById(id) {
+      for (const panel of PANELS) {
+        const spec = panel.dials.find(item => item.id === id || item.autoId === id);
+        if (spec) return spec;
+      }
+      return null;
     }
 
     async function request(path, options = {}) {
@@ -304,92 +503,399 @@
 
     function showError(error) {
       toastElement.textContent = error.message || String(error);
-      toastElement.classList.remove('hidden');
+      toastElement.classList.remove('hidden', 'ok');
       clearTimeout(showError.timer);
       showError.timer = setTimeout(() => toastElement.classList.add('hidden'), 5000);
     }
 
-    function displayValue(control, value) {
-      return `${value}${control.unit ? ` ${control.unit}` : ''}`;
+    function showOk(message) {
+      toastElement.textContent = message;
+      toastElement.classList.add('ok');
+      toastElement.classList.remove('hidden');
+      clearTimeout(showError.timer);
+      showError.timer = setTimeout(() => toastElement.classList.add('hidden'), 1800);
+    }
+
+    function byId(id) {
+      return controls.find(item => item.id === id);
+    }
+
+    function polar(deg) {
+      const rad = deg * Math.PI / 180;
+      return { x: CX + RADIUS * Math.cos(rad), y: CY + RADIUS * Math.sin(rad) };
+    }
+
+    function describeArc(fromDeg, toDeg) {
+      const start = polar(fromDeg);
+      const end = polar(toDeg);
+      const delta = ((toDeg - fromDeg) + 360) % 360;
+      const large = delta > 180 ? 1 : 0;
+      return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${RADIUS} ${RADIUS} 0 ${large} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function nearest(list, value) {
+      return list.reduce((best, item) => Math.abs(item - value) < Math.abs(best - value) ? item : best);
+    }
+
+    function uvcFromShutter(denom) {
+      return Math.max(1, Math.round(10000 / denom));
+    }
+
+    function shutterStops(control) {
+      const stops = SHUTTER_DENOMS.filter(denom => {
+        const uvc = uvcFromShutter(denom);
+        return uvc >= control.minimum && uvc <= control.maximum;
+      });
+      return stops.length ? stops : SHUTTER_DENOMS;
+    }
+
+    function wbRange(control) {
+      const min = Math.max(control.minimum, WB_WARM);
+      const max = Math.min(control.maximum, WB_COOL);
+      if (max <= min) return { min: control.minimum, max: control.maximum };
+      return { min, max };
+    }
+
+    function percentOf(control, value) {
+      const span = control.maximum - control.minimum;
+      if (span <= 0) return 0;
+      return Math.round(clamp((value - control.minimum) / span, 0, 1) * 100);
+    }
+
+    function focusDisplayOf(control, value) {
+      return 100 - percentOf(control, value);
+    }
+
+    function uvcFromPercent(control, percent) {
+      const span = control.maximum - control.minimum;
+      const step = Math.max(1, control.step || 1);
+      const raw = control.minimum + (clamp(percent, 0, 100) / 100) * span;
+      return clamp(Math.round(raw / step) * step, control.minimum, control.maximum);
+    }
+
+    function isoFromGain(control, value) {
+      const span = control.maximum - control.minimum;
+      if (span <= 0) return ISO_STOPS[0];
+      const t = clamp((value - control.minimum) / span, 0, 1);
+      return nearest(ISO_STOPS, 100 * Math.pow(16, t));
+    }
+
+    function gainFromIso(control, iso) {
+      const t = Math.log(clamp(iso, 100, 1600) / 100) / Math.log(16);
+      const span = control.maximum - control.minimum;
+      const step = Math.max(1, control.step || 1);
+      const raw = control.minimum + t * span;
+      return clamp(Math.round(raw / step) * step, control.minimum, control.maximum);
+    }
+
+    function ratioOf(control, spec, value) {
+      if (spec.format === 'shutter') {
+        const stops = shutterStops(control);
+        const denom = nearest(stops, Math.max(1, Math.round(10000 / Math.max(1, value))));
+        const index = stops.indexOf(denom);
+        return stops.length <= 1 ? 0 : index / (stops.length - 1);
+      }
+      if (spec.format === 'iso') {
+        const iso = isoFromGain(control, value);
+        const index = ISO_STOPS.indexOf(iso);
+        return index / (ISO_STOPS.length - 1);
+      }
+      if (spec.format === 'percent') {
+        return percentOf(control, value) / 100;
+      }
+      if (spec.format === 'focus') {
+        return focusDisplayOf(control, value) / 100;
+      }
+      if (spec.format === 'kelvin') {
+        const range = wbRange(control);
+        const span = range.max - range.min;
+        if (span <= 0) return 0;
+        return clamp((value - range.min) / span, 0, 1);
+      }
+      const span = control.maximum - control.minimum;
+      if (span <= 0) return 0;
+      return clamp((value - control.minimum) / span, 0, 1);
+    }
+
+    function valueFromRatio(control, spec, ratio) {
+      const t = clamp(ratio, 0, 1);
+      if (spec.format === 'shutter') {
+        const stops = shutterStops(control);
+        const index = Math.round(t * (stops.length - 1));
+        return uvcFromShutter(stops[index]);
+      }
+      if (spec.format === 'iso') {
+        const index = Math.round(t * (ISO_STOPS.length - 1));
+        return gainFromIso(control, ISO_STOPS[index]);
+      }
+      if (spec.format === 'percent') {
+        return uvcFromPercent(control, Math.round(t * 100));
+      }
+      if (spec.format === 'focus') {
+        return uvcFromPercent(control, 100 - Math.round(t * 100));
+      }
+      if (spec.format === 'kelvin') {
+        const range = wbRange(control);
+        const kelvin = Math.round((range.min + t * (range.max - range.min)) / 50) * 50;
+        const step = Math.max(1, control.step || 1);
+        return clamp(Math.round(kelvin / step) * step, control.minimum, control.maximum);
+      }
+      const span = control.maximum - control.minimum;
+      const step = Math.max(1, control.step || 1);
+      const raw = control.minimum + span * t;
+      return clamp(Math.round(raw / step) * step, control.minimum, control.maximum);
+    }
+
+    function stepValue(control, spec, value, direction) {
+      if (spec.format === 'shutter') {
+        const stops = shutterStops(control);
+        const denom = nearest(stops, Math.max(1, Math.round(10000 / Math.max(1, value))));
+        const index = clamp(stops.indexOf(denom) + direction, 0, stops.length - 1);
+        return uvcFromShutter(stops[index]);
+      }
+      if (spec.format === 'iso') {
+        const iso = isoFromGain(control, value);
+        const index = clamp(ISO_STOPS.indexOf(iso) + direction, 0, ISO_STOPS.length - 1);
+        return gainFromIso(control, ISO_STOPS[index]);
+      }
+      if (spec.format === 'percent') {
+        return uvcFromPercent(control, percentOf(control, value) + direction);
+      }
+      if (spec.format === 'focus') {
+        return uvcFromPercent(control, percentOf(control, value) - direction);
+      }
+      if (spec.format === 'kelvin') {
+        return valueFromRatio(control, spec, ratioOf(control, spec, value) + direction * 0.04);
+      }
+      const step = Math.max(1, control.step || 1) * direction;
+      return clamp(value + step, control.minimum, control.maximum);
+    }
+
+    function kelvinColor(kelvin) {
+      const t = clamp((kelvin - WB_WARM) / (WB_COOL - WB_WARM), 0, 1);
+      const r = Math.round(142 + t * (255 - 142));
+      const g = Math.round(200 - t * 70);
+      const b = Math.round(255 - t * 180);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function formatValue(control, spec, value) {
+      if (value == null) return '—';
+      if (spec.format === 'shutter') {
+        const denom = nearest(shutterStops(control), Math.max(1, Math.round(10000 / Math.max(1, value))));
+        return denom === 1 ? '1″' : `1/${denom}`;
+      }
+      if (spec.format === 'iso') return String(isoFromGain(control, value));
+      if (spec.format === 'percent') return String(percentOf(control, value));
+      if (spec.format === 'focus') return String(focusDisplayOf(control, value));
+      if (spec.format === 'kelvin') return `${Math.round(value / 50) * 50}K`;
+      if (spec.format === 'degree') return `${value}°`;
+      return String(value);
+    }
+
+    function angleFromPointer(el, event) {
+      const rect = el.getBoundingClientRect();
+      const dx = event.clientX - (rect.left + rect.width / 2);
+      const dy = event.clientY - (rect.top + rect.height / 2);
+      return (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+    }
+
+    function ratioFromAngle(deg) {
+      const rel = (deg - START_DEG + 360) % 360;
+      if (rel > SWEEP_DEG) return rel > SWEEP_DEG + (360 - SWEEP_DEG) / 2 ? 0 : 1;
+      return rel / SWEEP_DEG;
+    }
+
+    function dialMarkup(spec) {
+      const control = byId(spec.id);
+      const auto = spec.autoId ? byId(spec.autoId) : null;
+      const available = Boolean(control);
+      const autoOn = Boolean(auto && localValues.get(spec.autoId));
+      const value = available ? localValues.get(spec.id) : null;
+      const ratio = available ? ratioOf(control, spec, value) : 0;
+      const end = START_DEG + SWEEP_DEG * ratio;
+      const thumb = polar(end);
+      const track = describeArc(START_DEG, START_DEG + SWEEP_DEG);
+      const arc = ratio > 0.001 ? describeArc(START_DEG, end) : '';
+      const arcColor = spec.format === 'kelvin' && available ? kelvinColor(value) : 'var(--accent)';
+      const mode = spec.autoId
+        ? `<div class="mode-switch" data-auto="${escapeText(spec.autoId)}">
+            <button type="button" data-mode="auto" class="${autoOn ? 'active' : ''}">AUTO</button>
+            <button type="button" data-mode="manual" class="${autoOn ? '' : 'active'}">MAN</button>
+          </div>`
+        : `<div class="mode-placeholder"></div>`;
+
+      return `<article class="dial-card${available ? '' : ' unavailable'}${autoOn ? ' disabled' : ''}" data-id="${escapeText(spec.id)}" data-auto="${escapeText(spec.autoId || '')}">
+        <div class="dial-label">${escapeText(spec.label)}</div>
+        <div class="dial" role="slider" aria-label="${escapeText(spec.label)}">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <path d="${track}" fill="none" stroke="var(--track)" stroke-width="7" stroke-linecap="round"></path>
+            <path class="value-arc" d="${arc}" fill="none" stroke="${arcColor}" stroke-width="7" stroke-linecap="round"></path>
+            <circle class="thumb" cx="${thumb.x.toFixed(2)}" cy="${thumb.y.toFixed(2)}" r="5.2" fill="white"></circle>
+          </svg>
+          <div class="dial-value">${available ? escapeText(formatValue(control, spec, value)) : '—'}</div>
+        </div>
+        ${mode}
+      </article>`;
+    }
+
+    function currentPanel() {
+      return PANELS.find(panel => panel.id === activePanel) || PANELS[0];
+    }
+
+    function currentPresets() {
+      return presets[activePanel] || { items: [], selectedId: null };
+    }
+
+    function selectedPresetId() {
+      return presetSelect.value;
+    }
+
+    function renderPresetSelect() {
+      const box = currentPresets();
+      const selected = box.selectedId || '';
+      presetSelect.innerHTML = `<option value="">Preset…</option>` + box.items.map(item =>
+        `<option value="${escapeText(item.id)}"${item.id === selected ? ' selected' : ''}>${escapeText(item.name)}</option>`
+      ).join('');
+    }
+
+    function openDialog(mode) {
+      dialogMode = mode;
+      const selected = currentPresets().items.find(item => item.id === selectedPresetId());
+      dialogTitle.textContent = mode === 'delete'
+        ? `Smazat preset „${selected?.name || ''}“?`
+        : 'Nový preset';
+      dialogInput.value = '';
+      dialogInput.classList.toggle('hidden', mode === 'delete');
+      dialogElement.classList.remove('hidden');
+      if (mode !== 'delete') dialogInput.focus();
+    }
+
+    function closeDialog() {
+      dialogElement.classList.add('hidden');
+    }
+
+    function renderPanel() {
+      document.querySelectorAll('#tabs button').forEach(button => {
+        button.classList.toggle('active', button.dataset.panel === activePanel);
+      });
+      renderPresetSelect();
+
+      if (!connected) {
+        controlsElement.innerHTML = `<div class="empty">${escapeText(statusTextElement.textContent)}<br>Zkontrolujte USB připojení a spusťte nové vyhledání.</div>`;
+        return;
+      }
+
+      controlsElement.innerHTML = currentPanel().dials.map(dialMarkup).join('');
+      bindControls();
     }
 
     function render(state) {
       controls = state.controls || [];
+      presets = state.presets || presets;
       localValues.clear();
+      connected = Boolean(state.connected);
       for (const control of controls) {
         localValues.set(control.id, control.kind === 'toggle' ? control.enabled : control.value);
       }
 
       cameraNameElement.textContent = state.cameraName || 'Razer Kiyo V2 X';
       statusTextElement.textContent = state.message;
-      statusDotElement.classList.toggle('connected', state.connected);
+      statusDotElement.classList.toggle('connected', connected);
+      renderPanel();
+    }
 
-      if (!state.connected || controls.length === 0) {
-        controlsElement.innerHTML = `<div class="empty">${escapeText(state.message)}<br>Zkontrolujte USB připojení a spusťte nové vyhledání.</div>`;
-        return;
+    function updateDial(id) {
+      const card = document.querySelector(`[data-id="${CSS.escape(id)}"]`);
+      const control = byId(id);
+      const spec = specById(id);
+      if (!card || !control || !spec || spec.id !== id) return;
+      const autoOn = Boolean(spec.autoId && localValues.get(spec.autoId));
+      const value = localValues.get(id);
+      const ratio = ratioOf(control, spec, value);
+      const end = START_DEG + SWEEP_DEG * ratio;
+      const thumbPos = polar(end);
+      const arc = card.querySelector('.value-arc');
+      const thumb = card.querySelector('.thumb');
+      const label = card.querySelector('.dial-value');
+      if (arc) {
+        arc.setAttribute('d', ratio > 0.001 ? describeArc(START_DEG, end) : '');
+        if (spec.format === 'kelvin') arc.setAttribute('stroke', kelvinColor(value));
       }
+      if (thumb) {
+        thumb.setAttribute('cx', thumbPos.x.toFixed(2));
+        thumb.setAttribute('cy', thumbPos.y.toFixed(2));
+      }
+      if (label) label.textContent = formatValue(control, spec, value);
+      card.classList.toggle('disabled', autoOn);
+      if (spec.autoId) {
+        card.querySelector('[data-mode="auto"]')?.classList.toggle('active', autoOn);
+        card.querySelector('[data-mode="manual"]')?.classList.toggle('active', !autoOn);
+      }
+    }
 
-      controlsElement.innerHTML = controls.map(control => {
-        if (control.kind === 'toggle') {
-          return `<div class="control toggle" data-id="${escapeText(control.id)}">
-            <span class="control-label">${escapeText(control.label)}</span>
-            <label class="switch">
-              <input type="checkbox" data-control="${escapeText(control.id)}" ${control.enabled ? 'checked' : ''}>
-              <span></span>
-            </label>
-          </div>`;
-        }
-
-        return `<div class="control" data-id="${escapeText(control.id)}" data-depends="${escapeText(control.dependsOn || '')}">
-          <span class="control-label">${escapeText(control.label)}</span>
-          <div class="slider-row">
-            <input type="range" data-control="${escapeText(control.id)}" min="${control.minimum}" max="${control.maximum}" step="${control.step}" value="${control.value}">
-            <input type="number" data-number="${escapeText(control.id)}" min="${control.minimum}" max="${control.maximum}" step="${control.step}" value="${control.value}" aria-label="${escapeText(control.label)}" title="${escapeText(displayValue(control, control.value))}">
-          </div>
-        </div>`;
-      }).join('');
-
-      bindControls();
-      updateDependencies();
+    function setDialValue(id, value, send) {
+      const control = byId(id);
+      if (!control) return;
+      const next = clamp(value, control.minimum, control.maximum);
+      localValues.set(id, next);
+      updateDial(id);
+      if (send) scheduleUpdate(id, next);
     }
 
     function bindControls() {
-      document.querySelectorAll('[data-control]').forEach(input => {
-        if (input.type === 'checkbox') {
-          input.addEventListener('change', () => {
-            localValues.set(input.dataset.control, input.checked);
-            updateDependencies();
-            sendUpdate(input.dataset.control, { enabled: input.checked });
+      document.querySelectorAll('.dial').forEach(dial => {
+        const card = dial.closest('.dial-card');
+        const id = card.dataset.id;
+        const control = byId(id);
+        const spec = specById(id);
+        if (!control || !spec) return;
+
+        dial.addEventListener('pointerdown', event => {
+          if (card.classList.contains('disabled')) return;
+          event.preventDefault();
+          dial.setPointerCapture(event.pointerId);
+          activeDrag = id;
+          setDialValue(id, valueFromRatio(control, spec, ratioFromAngle(angleFromPointer(dial, event))), true);
+        });
+
+        dial.addEventListener('pointermove', event => {
+          if (activeDrag !== id || !dial.hasPointerCapture(event.pointerId)) return;
+          setDialValue(id, valueFromRatio(control, spec, ratioFromAngle(angleFromPointer(dial, event))), true);
+        });
+
+        dial.addEventListener('pointerup', event => {
+          if (activeDrag === id) {
+            activeDrag = null;
+            sendUpdate(id, { value: localValues.get(id) });
+          }
+          if (dial.hasPointerCapture(event.pointerId)) dial.releasePointerCapture(event.pointerId);
+        });
+
+        dial.addEventListener('wheel', event => {
+          if (card.classList.contains('disabled')) return;
+          event.preventDefault();
+          const direction = event.deltaY > 0 ? -1 : 1;
+          setDialValue(id, stepValue(control, spec, Number(localValues.get(id) || 0), direction), true);
+        }, { passive: false });
+      });
+
+      document.querySelectorAll('.mode-switch').forEach(group => {
+        group.querySelectorAll('button').forEach(button => {
+          button.addEventListener('click', () => {
+            const autoId = group.dataset.auto;
+            const enabled = button.dataset.mode === 'auto';
+            localValues.set(autoId, enabled);
+            const spec = specById(autoId);
+            if (spec) updateDial(spec.id);
+            sendUpdate(autoId, { enabled });
           });
-          return;
-        }
-
-        input.addEventListener('input', () => {
-          syncSlider(input.dataset.control, Number(input.value));
-          scheduleUpdate(input.dataset.control, Number(input.value));
-        });
-        input.addEventListener('change', () => sendUpdate(input.dataset.control, { value: Number(input.value) }));
-      });
-
-      document.querySelectorAll('[data-number]').forEach(input => {
-        input.addEventListener('change', () => {
-          const value = Math.min(Number(input.max), Math.max(Number(input.min), Number(input.value)));
-          syncSlider(input.dataset.number, value);
-          sendUpdate(input.dataset.number, { value });
         });
       });
-    }
-
-    function syncSlider(id, value) {
-      localValues.set(id, value);
-      const control = controls.find(item => item.id === id);
-      const slider = document.querySelector(`[data-control="${CSS.escape(id)}"]`);
-      const number = document.querySelector(`[data-number="${CSS.escape(id)}"]`);
-      if (slider) slider.value = value;
-      if (number) {
-        number.value = value;
-        if (control) number.title = displayValue(control, value);
-      }
     }
 
     function scheduleUpdate(id, value) {
@@ -409,28 +915,73 @@
       }
     }
 
-    function updateDependencies() {
-      document.querySelectorAll('[data-depends]').forEach(row => {
-        const dependency = row.dataset.depends;
-        if (!dependency) return;
-        const inverted = dependency.startsWith('!');
-        const id = inverted ? dependency.slice(1) : dependency;
-        const actual = Boolean(localValues.get(id));
-        const enabled = inverted ? !actual : actual;
-        row.classList.toggle('disabled', !enabled);
-        row.querySelectorAll('input').forEach(input => input.disabled = !enabled);
-      });
-    }
-
     async function loadState() {
       try {
         render(await request('/api/state'));
       } catch (error) {
+        connected = false;
         statusTextElement.textContent = 'Helper není dostupný';
         statusDotElement.classList.remove('connected');
         showError(error);
+        renderPanel();
       }
     }
+
+    async function presetAction(path, extra = {}) {
+      render(await request(path, {
+        method: 'POST',
+        body: JSON.stringify({ panel: activePanel, ...extra })
+      }));
+    }
+
+    document.querySelectorAll('#tabs button').forEach(button => {
+      button.addEventListener('click', () => {
+        activePanel = button.dataset.panel;
+        renderPanel();
+      });
+    });
+
+    document.querySelector('#presetLoad').addEventListener('click', async () => {
+      try {
+        if (!selectedPresetId()) throw new Error('Vyberte preset.');
+        await presetAction('/api/presets/load', { id: selectedPresetId() });
+        showOk('Preset načten');
+      } catch (error) { showError(error); }
+    });
+
+    document.querySelector('#presetCreate').addEventListener('click', () => openDialog('create'));
+    document.querySelector('#presetSave').addEventListener('click', async () => {
+      try {
+        if (!selectedPresetId()) throw new Error('Vyberte preset, nebo nejdřív vytvořte nový.');
+        await presetAction('/api/presets/save', { id: selectedPresetId() });
+        showOk('Preset uložen');
+      } catch (error) { showError(error); }
+    });
+    document.querySelector('#presetDelete').addEventListener('click', () => {
+      if (!selectedPresetId()) {
+        showError(new Error('Vyberte preset.'));
+        return;
+      }
+      openDialog('delete');
+    });
+
+    document.querySelector('#dialogCancel').addEventListener('click', closeDialog);
+    document.querySelector('#dialogOk').addEventListener('click', async () => {
+      try {
+        if (dialogMode === 'delete') {
+          await presetAction('/api/presets/delete', { id: selectedPresetId() });
+          showOk('Preset smazán');
+        } else {
+          await presetAction('/api/presets/create', { name: dialogInput.value });
+          showOk('Preset vytvořen');
+        }
+        closeDialog();
+      } catch (error) { showError(error); }
+    });
+    dialogInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') document.querySelector('#dialogOk').click();
+      if (event.key === 'Escape') closeDialog();
+    });
 
     document.querySelector('#rescan').addEventListener('click', async () => {
       try { render(await request('/api/rescan', { method: 'POST', body: '{}' })); }

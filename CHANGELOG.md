@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2 — 2026-08-14
+
+- Add Expo / Obraz / Optika dial panels with AUTO/MAN toggles.
+- Add per-panel presets persisted to Application Support.
+- Add factory preset `rrc_base` (1/60, ISO 400, brightness 48, focus 68, WB 4200 K) applied automatically on helper startup.
+- Invert focus dial so higher values focus nearer.
+- Invert white-balance arc color gradient.
+- Expose pan, tilt, and backlight when the camera reports them.
+
 ## 0.2.1 — 2026-08-14
 
 - Compact the OBS browser dock UI for ~450×320 panels.

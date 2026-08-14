@@ -20,6 +20,7 @@ struct CameraState: Encodable {
     let cameraName: String?
     let message: String
     let controls: [ControlDescriptor]
+    var presets: PresetLibrary = PresetLibrary()
 }
 
 struct ControlUpdate: Decodable {
@@ -46,6 +47,15 @@ enum CameraServiceError: LocalizedError {
 }
 
 final class CameraService {
+    static let panelControls: [String: [String]] = [
+        "expo": ["exposureAuto", "exposureTime", "gain", "brightness", "focusAuto", "focus"],
+        "obraz": ["contrast", "saturation", "sharpness", "whiteBalanceAuto", "whiteBalance"],
+        "optika": ["zoom", "tilt", "pan", "backlight"]
+    ]
+
+    static let startupPresetID = "rrc_base"
+    static let startupPresetName = "rrc_base"
+
     private let preferredName = "Razer Kiyo V2 X"
     private(set) var device: AVCaptureDevice?
     private(set) var uvcDevice: UVCDevice?
@@ -151,6 +161,30 @@ final class CameraService {
         appendSlider(&controls, id: "saturation", label: "Saturace", control: properties.saturation)
         appendSlider(&controls, id: "sharpness", label: "Ostrost obrazu", control: properties.sharpness)
         appendSlider(&controls, id: "zoom", label: "Zoom", control: properties.zoomAbsolute)
+        appendSlider(&controls, id: "backlight", label: "Backlight", control: properties.backlightCompensation)
+        if properties.panTiltAbsolute.isCapable {
+            let panTilt = properties.panTiltAbsolute
+            appendAxis(
+                &controls,
+                id: "pan",
+                label: "Pan",
+                value: panTilt.current1,
+                minimum: panTilt.minimum1,
+                maximum: panTilt.maximum1,
+                step: max(1, panTilt.resolution1),
+                unit: "°"
+            )
+            appendAxis(
+                &controls,
+                id: "tilt",
+                label: "Tilt",
+                value: panTilt.current2,
+                minimum: panTilt.minimum2,
+                maximum: panTilt.maximum2,
+                step: max(1, panTilt.resolution2),
+                unit: "°"
+            )
+        }
 
         return CameraState(
             connected: true,
@@ -160,6 +194,104 @@ final class CameraService {
                 : "Připojeno",
             controls: controls
         )
+    }
+
+    func snapshot(panel: String) throws -> [String: PresetValue] {
+        guard uvcDevice != nil else { throw CameraServiceError.noCamera }
+        let ids = Self.panelControls[panel] ?? []
+        var values: [String: PresetValue] = [:]
+        for control in state().controls where ids.contains(control.id) {
+            values[control.id] = PresetValue(value: control.value, enabled: control.enabled)
+        }
+        return values
+    }
+
+    func applyPreset(_ values: [String: PresetValue]) throws {
+        guard uvcDevice != nil else { throw CameraServiceError.noCamera }
+        for (id, preset) in values where preset.enabled != nil {
+            try? apply(ControlUpdate(id: id, value: nil, enabled: preset.enabled))
+        }
+        for (id, preset) in values where preset.value != nil {
+            try? apply(ControlUpdate(id: id, value: preset.value, enabled: nil))
+        }
+    }
+
+    static func buildRRCBaseValues(controls: [ControlDescriptor]) -> [String: PresetValue]? {
+        guard controls.contains(where: { $0.id == "exposureTime" }) else { return nil }
+        var values: [String: PresetValue] = [:]
+        values["exposureAuto"] = PresetValue(value: nil, enabled: false)
+        values["focusAuto"] = PresetValue(value: nil, enabled: false)
+        values["whiteBalanceAuto"] = PresetValue(value: nil, enabled: false)
+
+        if let control = controls.first(where: { $0.id == "exposureTime" }) {
+            values["exposureTime"] = PresetValue(value: uvcFromShutter(60, control: control), enabled: nil)
+        }
+        if let control = controls.first(where: { $0.id == "gain" }) {
+            values["gain"] = PresetValue(value: gainFromISO(400, control: control), enabled: nil)
+        }
+        if let control = controls.first(where: { $0.id == "brightness" }) {
+            values["brightness"] = PresetValue(value: uvcFromPercent(48, control: control), enabled: nil)
+        }
+        if let control = controls.first(where: { $0.id == "focus" }) {
+            values["focus"] = PresetValue(value: uvcFromFocusDisplay(68, control: control), enabled: nil)
+        }
+        if let control = controls.first(where: { $0.id == "whiteBalance" }) {
+            values["whiteBalance"] = PresetValue(value: kelvinValue(4200, control: control), enabled: nil)
+        }
+        return values
+    }
+
+    static func uvcFromShutter(_ denom: Int, control: ControlDescriptor) -> Int {
+        let uvc = max(1, (10_000 + denom / 2) / denom)
+        return clamp(uvc, control: control)
+    }
+
+    static func gainFromISO(_ iso: Int, control: ControlDescriptor) -> Int {
+        let clampedISO = min(1600, max(100, iso))
+        let t = log(Double(clampedISO) / 100.0) / log(16.0)
+        let span = Double((control.maximum ?? 0) - (control.minimum ?? 0))
+        let step = Double(max(1, control.step ?? 1))
+        let minimum = Double(control.minimum ?? 0)
+        let raw = minimum + t * span
+        return clamp(Int((raw / step).rounded()) * Int(step), control: control)
+    }
+
+    static func uvcFromPercent(_ percent: Int, control: ControlDescriptor) -> Int {
+        let span = (control.maximum ?? 0) - (control.minimum ?? 0)
+        guard span > 0 else { return control.minimum ?? 0 }
+        let step = max(1, control.step ?? 1)
+        let minimum = control.minimum ?? 0
+        let raw = Double(minimum) + (Double(min(100, max(0, percent))) / 100.0) * Double(span)
+        return clamp(Int((raw / Double(step)).rounded()) * step, control: control)
+    }
+
+    static func uvcFromFocusDisplay(_ display: Int, control: ControlDescriptor) -> Int {
+        uvcFromPercent(100 - display, control: control)
+    }
+
+    static func kelvinValue(_ kelvin: Int, control: ControlDescriptor) -> Int {
+        let range = whiteBalanceRange(control)
+        let rounded = Int((Double(kelvin) / 50.0).rounded()) * 50
+        return clamp(rounded, minimum: range.min, maximum: range.max)
+    }
+
+    private static func whiteBalanceRange(_ control: ControlDescriptor) -> (min: Int, max: Int) {
+        let warm = 2800
+        let cool = 6500
+        let minValue = max(control.minimum ?? warm, warm)
+        let maxValue = min(control.maximum ?? cool, cool)
+        if maxValue <= minValue {
+            return (control.minimum ?? warm, control.maximum ?? cool)
+        }
+        return (minValue, maxValue)
+    }
+
+    private static func clamp(_ value: Int, control: ControlDescriptor) -> Int {
+        clamp(value, minimum: control.minimum ?? value, maximum: control.maximum ?? value)
+    }
+
+    private static func clamp(_ value: Int, minimum: Int, maximum: Int) -> Int {
+        min(maximum, max(minimum, value))
     }
 
     func apply(_ update: ControlUpdate) throws {
@@ -192,6 +324,12 @@ final class CameraService {
             try set(properties.sharpness, update)
         case "zoom":
             try set(properties.zoomAbsolute, update)
+        case "backlight":
+            try set(properties.backlightCompensation, update)
+        case "pan":
+            try set(properties.panTiltAbsolute, axis: 1, update)
+        case "tilt":
+            try set(properties.panTiltAbsolute, axis: 2, update)
         default:
             throw CameraServiceError.unsupportedControl(update.id)
         }
@@ -211,6 +349,11 @@ final class CameraService {
         reset(p.saturation)
         reset(p.sharpness)
         reset(p.zoomAbsolute)
+        reset(p.backlightCompensation)
+        if p.panTiltAbsolute.isCapable {
+            p.panTiltAbsolute.current1 = p.panTiltAbsolute.defaultValue1
+            p.panTiltAbsolute.current2 = p.panTiltAbsolute.defaultValue2
+        }
     }
 
     private func appendSlider(
@@ -233,6 +376,31 @@ final class CameraService {
             step: max(1, control.resolution),
             unit: unit,
             dependsOn: dependsOn
+        ))
+    }
+
+    private func appendAxis(
+        _ controls: inout [ControlDescriptor],
+        id: String,
+        label: String,
+        value: Int,
+        minimum: Int,
+        maximum: Int,
+        step: Int,
+        unit: String?
+    ) {
+        guard minimum != maximum else { return }
+        controls.append(ControlDescriptor(
+            id: id,
+            label: label,
+            kind: "slider",
+            value: value,
+            enabled: nil,
+            minimum: minimum,
+            maximum: maximum,
+            step: step,
+            unit: unit,
+            dependsOn: nil
         ))
     }
 
@@ -268,6 +436,16 @@ final class CameraService {
         guard control.isCapable else { throw CameraServiceError.unsupportedControl(update.id) }
         guard let enabled = update.enabled else { throw CameraServiceError.missingValue }
         control.isEnabled = enabled
+    }
+
+    private func set(_ control: UVCMultipleIntControl, axis: Int, _ update: ControlUpdate) throws {
+        guard control.isCapable else { throw CameraServiceError.unsupportedControl(update.id) }
+        guard let value = update.value else { throw CameraServiceError.missingValue }
+        if axis == 1 {
+            control.current1 = min(control.maximum1, max(control.minimum1, value))
+        } else {
+            control.current2 = min(control.maximum2, max(control.minimum2, value))
+        }
     }
 
     private func reset(_ control: UVCIntControl) {
