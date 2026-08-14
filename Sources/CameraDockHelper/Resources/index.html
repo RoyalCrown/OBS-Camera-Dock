@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OBS Camera Dock</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #16181c;
+      --panel: #202329;
+      --panel-2: #272b32;
+      --line: #363b44;
+      --text: #f3f5f7;
+      --muted: #9ca4af;
+      --accent: #8b5cf6;
+      --accent-2: #a78bfa;
+      --ok: #38d996;
+      --danger: #ff6b77;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-width: 240px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+    }
+
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .camera-name {
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--danger);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 13%, transparent);
+    }
+
+    .dot.connected {
+      background: var(--ok);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 13%, transparent);
+    }
+
+    main {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 6px;
+      gap: 6px;
+    }
+
+    #controls {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      gap: 4px;
+      align-content: start;
+    }
+
+    .control {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      min-height: 26px;
+      padding: 3px 6px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel);
+      transition: opacity .15s ease, border-color .15s ease;
+    }
+
+    .control.toggle {
+      grid-template-columns: 1fr auto;
+    }
+
+    .control:focus-within {
+      border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
+    }
+
+    .control.disabled {
+      opacity: .42;
+    }
+
+    .control-label {
+      font-weight: 560;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .control-value {
+      display: none;
+    }
+
+    .slider-row {
+      display: contents;
+    }
+
+    input[type="range"] {
+      min-width: 0;
+      width: 100%;
+      height: 3px;
+      accent-color: var(--accent);
+    }
+
+    input[type="number"] {
+      width: 52px;
+      padding: 2px 4px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--panel-2);
+      color: var(--accent-2);
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .switch {
+      position: relative;
+      width: 30px;
+      height: 16px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .switch span {
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      background: #464c56;
+      transition: .16s;
+      cursor: pointer;
+    }
+
+    .switch span::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      top: 2px;
+      left: 2px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 2px #0007;
+      transition: .16s;
+    }
+
+    .switch input:checked + span { background: var(--accent); }
+    .switch input:checked + span::after { transform: translateX(14px); }
+
+    .empty {
+      padding: 16px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 5px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .actions {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 4px;
+    }
+
+    button {
+      flex: 1;
+      padding: 5px 6px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: #555d69; background: #2e333b; }
+    button:active { transform: translateY(1px); }
+
+    .toast {
+      position: fixed;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      z-index: 5;
+      padding: 7px 9px;
+      border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--line));
+      border-radius: 6px;
+      background: #351f25;
+      color: #ffd9dd;
+      box-shadow: 0 6px 18px #0008;
+      font-size: 11px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Camera Dock</h1>
+      <div id="cameraName" class="camera-name">Razer Kiyo V2 X</div>
+    </div>
+    <div class="status-row">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">Připojování…</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="controls"></section>
+    <div class="actions">
+      <button id="rescan" type="button">Vyhledat kameru</button>
+      <button id="reset" type="button">Výchozí hodnoty</button>
+    </div>
+  </main>
+
+  <div id="toast" class="toast hidden" role="alert"></div>
+
+  <script>
+    const controlsElement = document.querySelector('#controls');
+    const cameraNameElement = document.querySelector('#cameraName');
+    const statusTextElement = document.querySelector('#statusText');
+    const statusDotElement = document.querySelector('#statusDot');
+    const toastElement = document.querySelector('#toast');
+    const localValues = new Map();
+    const timers = new Map();
+    let controls = [];
+
+    function escapeText(value) {
+      const node = document.createElement('span');
+      node.textContent = String(value ?? '');
+      return node.innerHTML;
+    }
+
+    async function request(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      return data;
+    }
+
+    function showError(error) {
+      toastElement.textContent = error.message || String(error);
+      toastElement.classList.remove('hidden');
+      clearTimeout(showError.timer);
+      showError.timer = setTimeout(() => toastElement.classList.add('hidden'), 5000);
+    }
+
+    function displayValue(control, value) {
+      return `${value}${control.unit ? ` ${control.unit}` : ''}`;
+    }
+
+    function render(state) {
+      controls = state.controls || [];
+      localValues.clear();
+      for (const control of controls) {
+        localValues.set(control.id, control.kind === 'toggle' ? control.enabled : control.value);
+      }
+
+      cameraNameElement.textContent = state.cameraName || 'Razer Kiyo V2 X';
+      statusTextElement.textContent = state.message;
+      statusDotElement.classList.toggle('connected', state.connected);
+
+      if (!state.connected || controls.length === 0) {
+        controlsElement.innerHTML = `<div class="empty">${escapeText(state.message)}<br>Zkontrolujte USB připojení a spusťte nové vyhledání.</div>`;
+        return;
+      }
+
+      controlsElement.innerHTML = controls.map(control => {
+        if (control.kind === 'toggle') {
+          return `<div class="control toggle" data-id="${escapeText(control.id)}">
+            <span class="control-label">${escapeText(control.label)}</span>
+            <label class="switch">
+              <input type="checkbox" data-control="${escapeText(control.id)}" ${control.enabled ? 'checked' : ''}>
+              <span></span>
+            </label>
+          </div>`;
+        }
+
+        return `<div class="control" data-id="${escapeText(control.id)}" data-depends="${escapeText(control.dependsOn || '')}">
+          <span class="control-label">${escapeText(control.label)}</span>
+          <div class="slider-row">
+            <input type="range" data-control="${escapeText(control.id)}" min="${control.minimum}" max="${control.maximum}" step="${control.step}" value="${control.value}">
+            <input type="number" data-number="${escapeText(control.id)}" min="${control.minimum}" max="${control.maximum}" step="${control.step}" value="${control.value}" aria-label="${escapeText(control.label)}" title="${escapeText(displayValue(control, control.value))}">
+          </div>
+        </div>`;
+      }).join('');
+
+      bindControls();
+      updateDependencies();
+    }
+
+    function bindControls() {
+      document.querySelectorAll('[data-control]').forEach(input => {
+        if (input.type === 'checkbox') {
+          input.addEventListener('change', () => {
+            localValues.set(input.dataset.control, input.checked);
+            updateDependencies();
+            sendUpdate(input.dataset.control, { enabled: input.checked });
+          });
+          return;
+        }
+
+        input.addEventListener('input', () => {
+          syncSlider(input.dataset.control, Number(input.value));
+          scheduleUpdate(input.dataset.control, Number(input.value));
+        });
+        input.addEventListener('change', () => sendUpdate(input.dataset.control, { value: Number(input.value) }));
+      });
+
+      document.querySelectorAll('[data-number]').forEach(input => {
+        input.addEventListener('change', () => {
+          const value = Math.min(Number(input.max), Math.max(Number(input.min), Number(input.value)));
+          syncSlider(input.dataset.number, value);
+          sendUpdate(input.dataset.number, { value });
+        });
+      });
+    }
+
+    function syncSlider(id, value) {
+      localValues.set(id, value);
+      const control = controls.find(item => item.id === id);
+      const slider = document.querySelector(`[data-control="${CSS.escape(id)}"]`);
+      const number = document.querySelector(`[data-number="${CSS.escape(id)}"]`);
+      if (slider) slider.value = value;
+      if (number) {
+        number.value = value;
+        if (control) number.title = displayValue(control, value);
+      }
+    }
+
+    function scheduleUpdate(id, value) {
+      clearTimeout(timers.get(id));
+      timers.set(id, setTimeout(() => sendUpdate(id, { value }), 90));
+    }
+
+    async function sendUpdate(id, payload) {
+      clearTimeout(timers.get(id));
+      try {
+        await request('/api/control', {
+          method: 'POST',
+          body: JSON.stringify({ id, ...payload })
+        });
+      } catch (error) {
+        showError(error);
+      }
+    }
+
+    function updateDependencies() {
+      document.querySelectorAll('[data-depends]').forEach(row => {
+        const dependency = row.dataset.depends;
+        if (!dependency) return;
+        const inverted = dependency.startsWith('!');
+        const id = inverted ? dependency.slice(1) : dependency;
+        const actual = Boolean(localValues.get(id));
+        const enabled = inverted ? !actual : actual;
+        row.classList.toggle('disabled', !enabled);
+        row.querySelectorAll('input').forEach(input => input.disabled = !enabled);
+      });
+    }
+
+    async function loadState() {
+      try {
+        render(await request('/api/state'));
+      } catch (error) {
+        statusTextElement.textContent = 'Helper není dostupný';
+        statusDotElement.classList.remove('connected');
+        showError(error);
+      }
+    }
+
+    document.querySelector('#rescan').addEventListener('click', async () => {
+      try { render(await request('/api/rescan', { method: 'POST', body: '{}' })); }
+      catch (error) { showError(error); }
+    });
+
+    document.querySelector('#reset').addEventListener('click', async () => {
+      try { render(await request('/api/reset', { method: 'POST', body: '{}' })); }
+      catch (error) { showError(error); }
+    });
+
+    loadState();
+  </script>
+</body>
+</html>
