@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-08-14
+
+- Compact the OBS browser dock UI for ~450×320 panels.
+- Collapse the header into a single status row.
+- Render controls as dense single-line rows (label / slider / value).
+- Keep action buttons pinned while allowing the control list to scroll.
+
 ## 0.1.1 — 2026-07-19
 
 - Fixed an infinite loop while parsing a composite USB device with non-video interfaces before its UVC control interface.

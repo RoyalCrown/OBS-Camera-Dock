@@ -40,7 +40,13 @@ Výsledná aplikace bude v `dist/OBS Camera Dock Helper.app`.
 - Pokud CameraController současně přepisuje hodnoty, ukončete jej a nechte nastavení spravovat pouze helper.
 - Aplikace naslouchá výhradně na lokální adrese `127.0.0.1`.
 
-## Změny ve verzi v0.2.0
+## Změny ve verzi 0.2.1
+
+- kompaktní UI pro OBS dock cca 450×320,
+- jednořádkové ovladače a zmenšený header.
+
+## Změny ve verzi 0.1.1
+
 - opraveno zpracování kompozitních USB descriptorů Razer Kiyo V2 X,
 - odstraněno zamrznutí po stisku **Vyhledat kameru**,
 - přidána bezpečnostní kontrola délky každého USB descriptoru,
